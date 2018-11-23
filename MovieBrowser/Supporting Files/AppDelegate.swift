@@ -21,6 +21,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     static var tintColor: UIColor {
         return UIColor.init(white: 0.7, alpha: 0.85)
     }
+    
+    static var persistentContainer: NSPersistentContainer {
+        return (UIApplication.shared.delegate as! AppDelegate).persistentContainer
+    }
+    
+    static var viewContext: NSManagedObjectContext {
+        return persistentContainer.viewContext
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
