@@ -64,6 +64,11 @@ class MovieCollectionViewController: UICollectionViewController {
         collectionView.reloadData()
     }
     
+    func reloadMovies() {
+        loadMovies()
+        collectionView.reloadData()
+    }
+    
     // MARK: UICollectionViewDataSource
     
     override func numberOfSections(in collectionView: UICollectionView) -> Int {

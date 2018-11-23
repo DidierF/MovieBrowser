@@ -88,7 +88,16 @@ class MovieTabBarController: UITabBarController {
                     newMovie.rating = (movie["vote_average"] as! NSNumber).doubleValue
                     newMovie.favorite = false
                     temp.append(newMovie)
-                    
+                    ImagesClient().fetchImage(withName: movie["poster_path"] as! String) { (image: UIImage) in
+                        newMovie.image = image.pngData()
+                        do {
+                            try AppDelegate.viewContext.save()
+                        } catch let er {
+                            print("Error saving movie:\n\(er)")
+                        }
+                        
+                        (self.selectedViewController as! MovieCollectionViewController).reloadMovies()
+                    }
                     do {
                         try AppDelegate.viewContext.save()
                     } catch let er {
@@ -96,6 +105,7 @@ class MovieTabBarController: UITabBarController {
                     }
                 }
             }
+            (selectedViewController as! MovieCollectionViewController).reloadMovies()
         }
         
         return temp

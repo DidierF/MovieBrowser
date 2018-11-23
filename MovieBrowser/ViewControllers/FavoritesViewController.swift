@@ -7,9 +7,19 @@
 //
 
 import UIKit
+import CoreData
 
 class FavoritesViewController: MovieCollectionViewController {
 
+    override func getMoviesRequest() -> NSFetchRequest<Movie> {
+        let movieReq: NSFetchRequest<Movie> = Movie.fetchRequest()
+        movieReq.sortDescriptors = [
+            NSSortDescriptor(key: "rating", ascending: false)
+        ]
+        movieReq.predicate = NSPredicate(format: "favorite = true")
+        return movieReq
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
