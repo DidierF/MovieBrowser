@@ -23,14 +23,14 @@ class MovieCollectionViewController: UICollectionViewController {
         return movieReq
     }
     
-    private func loadMovies() {
+    func loadMovies() {
         // Load stored movies
-        
         do {
             movies = try AppDelegate.viewContext.fetch(getMoviesRequest())
         } catch let error as NSError {
             print("Error getting stored movies: \(error)")
         }
+        collectionView.reloadData()
     }
     
     init() {
@@ -38,8 +38,6 @@ class MovieCollectionViewController: UICollectionViewController {
         layout.sectionInset = UIEdgeInsets(top: 20, left: 10, bottom: 10, right: 10)
         layout.itemSize = CGSize(width: 130, height: 235)
         super.init(collectionViewLayout: layout)
-        
-        loadMovies()
     }
     
     override init(collectionViewLayout: UICollectionViewLayout) {
@@ -56,17 +54,7 @@ class MovieCollectionViewController: UICollectionViewController {
         collectionView.register(MovieCollectionViewCell.self, forCellWithReuseIdentifier: reuseIdentifier)
         collectionView.backgroundColor = AppDelegate.backgroundColor
         
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
         loadMovies()
-        collectionView.reloadData()
-    }
-    
-    func reloadMovies() {
-        loadMovies()
-        collectionView.reloadData()
     }
     
     // MARK: UICollectionViewDataSource

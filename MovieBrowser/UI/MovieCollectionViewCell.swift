@@ -30,6 +30,7 @@ class MovieCollectionViewCell: UICollectionViewCell {
         return image
     }()
     var movie: Movie?
+    static let favoriteNotificationName = Notification.Name("favoriteNotification")
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -83,6 +84,7 @@ class MovieCollectionViewCell: UICollectionViewCell {
         }
         favImage.image = movie!.favorite ? #imageLiteral(resourceName: "favFilled") : #imageLiteral(resourceName: "favEmpty")
         favImage.image = favImage.image?.withRenderingMode(.alwaysTemplate)
+        NotificationCenter.default.post(Notification.init(name: MovieCollectionViewCell.favoriteNotificationName))
     }
     
     required init?(coder aDecoder: NSCoder) {

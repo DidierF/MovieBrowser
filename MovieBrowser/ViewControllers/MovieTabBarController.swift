@@ -96,7 +96,7 @@ class MovieTabBarController: UITabBarController {
                             print("Error saving movie:\n\(er)")
                         }
                         
-                        (self.selectedViewController as! MovieCollectionViewController).reloadMovies()
+                        (self.selectedViewController as! MovieCollectionViewController).loadMovies()
                     }
                     do {
                         try AppDelegate.viewContext.save()
@@ -105,7 +105,7 @@ class MovieTabBarController: UITabBarController {
                     }
                 }
             }
-            (selectedViewController as! MovieCollectionViewController).reloadMovies()
+            (selectedViewController as! MovieCollectionViewController).loadMovies()
         }
         
         return temp
