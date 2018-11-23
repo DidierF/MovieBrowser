@@ -79,7 +79,8 @@ class MovieCollectionViewController: UICollectionViewController {
     // MARK: UICollectionViewDelegate
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
+        let controller = MovieDetailViewController(movie: movies[indexPath.row])
+        self.navigationController?.pushViewController(controller, animated: true)
     }
     
 }

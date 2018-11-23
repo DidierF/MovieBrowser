@@ -39,6 +39,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UINavigationBar.appearance().titleTextAttributes = [.foregroundColor : AppDelegate.tintColor]
         
         window?.makeKeyAndVisible()
+        
+        
+        
         return true
     }
 

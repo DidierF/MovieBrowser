@@ -17,11 +17,15 @@ class MovieCollectionViewCell: UICollectionViewCell {
     var ratingLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont.systemFont(ofSize: 18)
+        label.textColor = UIColor.white
         return label
     }()
     var favImage: UIImageView = {
         let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
+        image.tintColor = UIColor.white
+        image.isUserInteractionEnabled = true
         return image
     }()
     var backImage: UIImageView = {
@@ -30,7 +34,6 @@ class MovieCollectionViewCell: UICollectionViewCell {
         return image
     }()
     var movie: Movie?
-    static let favoriteNotificationName = Notification.Name("favoriteNotification")
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -57,34 +60,25 @@ class MovieCollectionViewCell: UICollectionViewCell {
         
         addSubview(ratingLabel)
         ratingLabel.text = "\(movie.rating)"
-        ratingLabel.textColor = UIColor.white
         ratingLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: 8).isActive = true
         ratingLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8).isActive = true
         
         addSubview(favImage)
         favImage.image = movie.favorite ? #imageLiteral(resourceName: "favFilled") : #imageLiteral(resourceName: "favEmpty")
         favImage.image = favImage.image?.withRenderingMode(.alwaysTemplate)
-        favImage.tintColor = UIColor.white
         favImage.rightAnchor.constraint(equalTo: rightAnchor, constant: -8).isActive = true
         favImage.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8).isActive = true
-        favImage.isUserInteractionEnabled = true
         
-        let tapRecoginizer = UITapGestureRecognizer(target: self, action: #selector(favoriteMovie(sender:)))
+        let tapRecoginizer = UITapGestureRecognizer(target: self, action: #selector(favoriteMovie))
         favImage.addGestureRecognizer(tapRecoginizer)
         
         
     }
     
-    @objc func favoriteMovie(sender: UIResponder) {
-        movie?.favorite = !(movie?.favorite)!
-        do {
-            try movie?.managedObjectContext?.save()
-        } catch let err {
-            print("Error saving movie:\n\(err)")
-        }
+    @objc func favoriteMovie() {
+        movie!.toggleFavorite()
         favImage.image = movie!.favorite ? #imageLiteral(resourceName: "favFilled") : #imageLiteral(resourceName: "favEmpty")
         favImage.image = favImage.image?.withRenderingMode(.alwaysTemplate)
-        NotificationCenter.default.post(Notification.init(name: MovieCollectionViewCell.favoriteNotificationName))
     }
     
     required init?(coder aDecoder: NSCoder) {

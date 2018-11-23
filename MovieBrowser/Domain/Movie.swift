@@ -10,5 +10,17 @@ import UIKit
 import CoreData
 
 class Movie: NSManagedObject {
-
+    static let favoriteNotificationName = Notification.Name("favoriteNotification")
+    
+    public static let imageWidth: CGFloat = 130
+    
+    public func toggleFavorite() {
+        favorite = !favorite
+        do {
+            try self.managedObjectContext?.save()
+        } catch let err {
+            print("Error saving movie:\n\(err)")
+        }
+        NotificationCenter.default.post(Notification.init(name: Movie.favoriteNotificationName))
+    }
 }

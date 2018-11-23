@@ -32,7 +32,7 @@ class FavoritesViewController: MovieCollectionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        NotificationCenter.default.addObserver(self, selector: #selector((favoriteNotificationHandler(notification:))), name: MovieCollectionViewCell.favoriteNotificationName, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector((favoriteNotificationHandler(notification:))), name: Movie.favoriteNotificationName, object: nil)
     }
     
     @objc func favoriteNotificationHandler(notification: Notification) {
