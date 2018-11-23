@@ -13,10 +13,24 @@ import CoreData
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-
+    
+    static var backgroundColor: UIColor {
+        return UIColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1)
+    }
+    
+    static var tintColor: UIColor {
+        return UIColor.init(white: 0.7, alpha: 0.85)
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        window = UIWindow(frame: UIScreen.main.bounds)
+        window?.rootViewController = UINavigationController(rootViewController: MovieTabBarController())
+        (window?.rootViewController as! UINavigationController).navigationBar.barTintColor = AppDelegate.backgroundColor
+        
+        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor : AppDelegate.tintColor]
+        
+        window?.makeKeyAndVisible()
         return true
     }
 
