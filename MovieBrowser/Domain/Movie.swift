@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreData
+import Firebase
 
 class Movie: NSManagedObject {
     static let favoriteNotificationName = Notification.Name("favoriteNotification")
@@ -24,6 +25,10 @@ class Movie: NSManagedObject {
         favorite = !favorite
         do {
             try self.managedObjectContext?.save()
+            Analytics.logEvent("MovieFavorited", parameters: [
+                "MovieTitle": self.title!,
+                "FavoriteValue": self.favorite ? "true" : "false"
+                ])
         } catch let err {
             print("Error saving movie:\n\(err)")
         }

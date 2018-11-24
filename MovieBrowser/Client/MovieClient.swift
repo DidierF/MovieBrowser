@@ -11,11 +11,11 @@ import Moya
 import Alamofire
 
 enum MovieClient {
-    case fetchMoviesByRating(page: Int)
-    case fetchMoviesByYear(page: Int, ascending: Bool)
+    case fetchMoviesByRating(apiKey: String, page: Int)
+    case fetchMoviesByYear(apiKey: String, page: Int, ascending: Bool)
 }
 
-let TMDB_API_KEY = "3e1ebc5c2fbd4ca68824378351d25f3e"
+let firebase = FirebaseClient()
 
 extension MovieClient: TargetType {
     
@@ -46,12 +46,15 @@ extension MovieClient: TargetType {
     }
     
     var task: Task {
-        var params: [String: Any] = ["api_key": TMDB_API_KEY]
+        var params: [String: Any] = [:]
         
         switch self {
-        case .fetchMoviesByRating(let page):
+        case .fetchMoviesByRating(let apiKey, let page):
+            params["api_key"] = apiKey
             params["page"] = page
-        case .fetchMoviesByYear(let page, let ascending):
+            
+        case .fetchMoviesByYear(let apiKey, let page, let ascending):
+            params["api_key"] = apiKey
             params["page"] = page
             params["sort_by"] = ascending ? "release_date.asc" : "release_date.desc"
         }

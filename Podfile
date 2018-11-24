@@ -6,5 +6,7 @@ target 'MovieBrowser' do
 
   # Pods for MovieBrowser
   pod 'Moya'
-  pod 'AlamofireImage' 
+  pod 'AlamofireImage'
+  pod 'Firebase/Core'
+  pod 'Firebase/Database'
 end

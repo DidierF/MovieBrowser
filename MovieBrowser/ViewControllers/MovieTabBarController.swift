@@ -13,6 +13,7 @@ import Moya
 class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerViewDataSource {
     
     var movies = [Movie]()
+    let firebase = FirebaseClient()
     let movieProvider = MoyaProvider<MovieClient>()
     let picker = UIPickerView()
     let sortOptions: [String] = [
@@ -117,43 +118,46 @@ class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerV
     }
     
     func fetchMoviesByRating(page: Int = 1) {
-        movieProvider.request(.fetchMoviesByRating(page: page)) { (result) in
-            switch result {
-            case .success(let response):
-                do {
-                    let json = try JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
-                    let movies = json["results"] as! [[String:Any]]
-                    
-                    let sort: Movie.sort = .Rating
-                    (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
-                    self.movies = self.parseMovies(fromDict: movies, context: AppDelegate.viewContext, storedIds: self.getStoredMovieIds())
-                } catch let error as NSError {
-                    print("\(error)")
+        firebase.getTmdbApiKey { (apiKey) in
+            self.movieProvider.request(.fetchMoviesByRating(apiKey: apiKey, page: page)) { (result) in
+                switch result {
+                case .success(let response):
+                    do {
+                        let json = try JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
+                        let movies = json["results"] as! [[String:Any]]
+                        
+                        let sort: Movie.sort = .Rating
+                        (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
+                        self.movies = self.parseMovies(fromDict: movies, context: AppDelegate.viewContext, storedIds: self.getStoredMovieIds())
+                    } catch let error as NSError {
+                        print("\(error)")
+                    }
+                case .failure(let error):
+                    print("Error fetching movies from TMDB:\n\(error)")
                 }
-            case .failure(let error):
-                print("Error fetching movies from TMDB:\n\(error)")
             }
         }
     }
     
     func fetchMoviesByYear(page: Int = 1, ascending: Bool = false) {
-        movieProvider.request(.fetchMoviesByYear(page: page, ascending: ascending)) { (result) in
-            switch result {
-            case .success(let response):
-                do {
-                    let json = try JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
-                    let movies = json["results"] as! [[String:Any]]
-                    
-                    let sort: Movie.sort = ascending ? .YearAsc : .YearDesc
-                    (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
-                    self.movies = self.parseMovies(fromDict: movies, context: AppDelegate.viewContext, storedIds: self.getStoredMovieIds())
-                } catch let error as NSError {
-                    print("\(error)")
+        firebase.getTmdbApiKey { (apiKey) in
+            self.movieProvider.request(.fetchMoviesByYear(apiKey: apiKey, page: page, ascending: ascending)) { (result) in
+                switch result {
+                case .success(let response):
+                    do {
+                        let json = try JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
+                        let movies = json["results"] as! [[String:Any]]
+                        
+                        let sort: Movie.sort = ascending ? .YearAsc : .YearDesc
+                        (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
+                        self.movies = self.parseMovies(fromDict: movies, context: AppDelegate.viewContext, storedIds: self.getStoredMovieIds())
+                    } catch let error as NSError {
+                        print("\(error)")
+                    }
+                case .failure(let error):
+                    print("Error fetching movies from TMDB:\n\(error)")
                 }
-            case .failure(let error):
-                print("Error fetching movies from TMDB:\n\(error)")
             }
-            
         }
     }
     
