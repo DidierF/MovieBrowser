@@ -32,7 +32,7 @@ class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerV
         navigationItem.rightBarButtonItem?.tintColor = AppDelegate.tintColor
         
         setupTabs()
-        fetchMoviesByYear()
+        fetchMoviesByRating()
     }
     
     fileprivate func setupTabs() {
