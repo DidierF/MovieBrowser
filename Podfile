@@ -9,4 +9,6 @@ target 'MovieBrowser' do
   pod 'AlamofireImage'
   pod 'Firebase/Core'
   pod 'Firebase/Database'
+  pod 'Fabric'
+  pod 'Crashlytics'
 end

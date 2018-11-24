@@ -173,6 +173,7 @@
 				6890D68E21A7713200E760E3 /* Frameworks */,
 				6890D68F21A7713200E760E3 /* Resources */,
 				A6EC5F1DCF134C0298E02424 /* [CP] Embed Pods Frameworks */,
+				68E61B6921A9E95A00096959 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -251,6 +252,23 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		68E61B6921A9E95A00096959 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Fabric/run\" 42137503d8389ab97c63227417d36ce25d9c4ecf 05ffcb0f618cde11f5f86d0155bddbff1bd55d952108f6bf83a61f5e144e31c8\n\n";
 		};
 		A6EC5F1DCF134C0298E02424 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -445,6 +463,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = T8UW5AA232;
 				INFOPLIST_FILE = "$(SRCROOT)/MovieBrowser/Supporting Files/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -464,6 +483,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = T8UW5AA232;
 				INFOPLIST_FILE = "$(SRCROOT)/MovieBrowser/Supporting Files/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
