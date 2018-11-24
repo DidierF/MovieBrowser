@@ -39,25 +39,17 @@ class ViewController: MovieCollectionViewController {
             
             switch self.sorting {
             case .Rating:
-                DispatchQueue.global().async {
-                    self.movieClient.fetchMoviesByRating(page: nextPage, completion: completion, andImageCompletion: imageCompletion)
-                }
+                self.movieClient.fetchMoviesByRating(page: nextPage, completion: completion, andImageCompletion: imageCompletion)
             case .YearAsc:
-                DispatchQueue.global().async {
-                    self.movieClient.fetchMoviesByYear(page: nextPage, ascending: true, completion: completion, andImageCompletion: imageCompletion)
-                }
+                self.movieClient.fetchMoviesByYear(page: nextPage, ascending: true, completion: completion, andImageCompletion: imageCompletion)
             case .YearDesc:
-                DispatchQueue.global().async {
-                    self.movieClient.fetchMoviesByYear(page: nextPage, ascending: false, completion: completion, andImageCompletion: imageCompletion)
-                }
+                self.movieClient.fetchMoviesByYear(page: nextPage, ascending: false, completion: completion, andImageCompletion: imageCompletion)
             case .NameAsc:
-                DispatchQueue.global().async {
-                    self.movieClient.fetchMoviesByRating(page: nextPage, completion: completion, andImageCompletion: imageCompletion)
-                }
+                let nextPage = movieClient.getLastPage(forType: .Rating) + 1
+                self.movieClient.fetchMoviesByRating(page: nextPage, completion: completion, andImageCompletion: imageCompletion)
             case .NameDesc:
-                DispatchQueue.global().async {
-                    self.movieClient.fetchMoviesByRating(page: nextPage, completion: completion, andImageCompletion: imageCompletion)
-                }
+                let nextPage = movieClient.getLastPage(forType: .Rating) + 1
+                self.movieClient.fetchMoviesByRating(page: nextPage, completion: completion, andImageCompletion: imageCompletion)
             }
         }
     }
