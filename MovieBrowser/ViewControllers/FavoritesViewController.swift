@@ -20,13 +20,8 @@ class FavoritesViewController: MovieCollectionViewController {
         return label
     }()
     
-    override func getMoviesRequest() -> NSFetchRequest<Movie> {
-        let movieReq: NSFetchRequest<Movie> = Movie.fetchRequest()
-        movieReq.sortDescriptors = [
-            NSSortDescriptor(key: "rating", ascending: false)
-        ]
-        movieReq.predicate = NSPredicate(format: "favorite = true")
-        return movieReq
+    override func getRequestPredicate() -> NSPredicate? {
+        return NSPredicate(format: "favorite = true")
     }
     
     override func viewDidLoad() {

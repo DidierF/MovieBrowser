@@ -10,18 +10,29 @@ import UIKit
 import CoreData
 import Moya
 
-class MovieTabBarController: UITabBarController {
+class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerViewDataSource {
     
     var movies = [Movie]()
     let movieProvider = MoyaProvider<MovieClient>()
-
+    let picker = UIPickerView()
+    let sortOptions: [String] = [
+        "Rating",
+        "Publication old first",
+        "Publication new first"
+    ]
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.title = (Bundle.main.infoDictionary!["CFBundleName"] as! String)
         
+        setupPicker()
+        
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: #imageLiteral(resourceName: "filter"), style: .plain, target: self, action: #selector(sortMovies))
+        navigationItem.rightBarButtonItem?.tintColor = AppDelegate.tintColor
+        
         setupTabs()
-        fetchMovies()
+        fetchMoviesByYear()
     }
     
     fileprivate func setupTabs() {
@@ -35,6 +46,20 @@ class MovieTabBarController: UITabBarController {
         favViewController.tabBarItem = UITabBarItem(title: nil, image: #imageLiteral(resourceName: "favEmpty"), selectedImage: #imageLiteral(resourceName: "favFilled"))
         
         self.viewControllers = [mainViewController, favViewController]
+    }
+    
+    fileprivate func setupPicker() {
+        picker.isHidden = true
+        picker.delegate = self
+        picker.dataSource = self
+        
+        view.addSubview(picker)
+        picker.translatesAutoresizingMaskIntoConstraints = false
+        picker.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        picker.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        picker.backgroundColor = AppDelegate.backgroundColor
+        picker.tintColor = AppDelegate.tintColor
+        picker.layer.cornerRadius = 15
     }
     
     func getStoredMovieIds() -> Set<Int16> {
@@ -55,7 +80,43 @@ class MovieTabBarController: UITabBarController {
         return Set<Int16>()
     }
     
-    func fetchMovies(page: Int = 1) {
+    @objc func sortMovies() {
+        picker.isHidden = false
+    }
+    
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return self.sortOptions.count
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, attributedTitleForRow row: Int, forComponent component: Int) -> NSAttributedString? {
+        return NSAttributedString(string: sortOptions[row], attributes: [NSAttributedString.Key.foregroundColor: AppDelegate.tintColor])
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        let controller = self.selectedViewController as! MovieCollectionViewController
+        switch row {
+        case 0:
+            controller.set(sort: .Rating)
+            fetchMoviesByRating()
+        case 1:
+            controller.set(sort: .YearAsc)
+            fetchMoviesByYear(ascending: true)
+        case 2:
+            controller.set(sort: .YearDesc)
+            fetchMoviesByYear(ascending: true)
+        default:
+            controller.set(sort: .Rating)
+            fetchMoviesByRating()
+        }
+        controller.loadMovies()
+        picker.isHidden = true
+    }
+    
+    func fetchMoviesByRating(page: Int = 1) {
         movieProvider.request(.fetchMoviesByRating(page: page)) { (result) in
             switch result {
             case .success(let response):
@@ -63,19 +124,44 @@ class MovieTabBarController: UITabBarController {
                     let json = try JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
                     let movies = json["results"] as! [[String:Any]]
                     
+                    let sort: Movie.sort = .Rating
+                    (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
                     self.movies = self.parseMovies(fromDict: movies, context: AppDelegate.viewContext, storedIds: self.getStoredMovieIds())
                 } catch let error as NSError {
                     print("\(error)")
                 }
-                (self.selectedViewController as? UICollectionViewController)?.collectionView.reloadData()
             case .failure(let error):
                 print("Error fetching movies from TMDB:\n\(error)")
             }
         }
     }
     
+    func fetchMoviesByYear(page: Int = 1, ascending: Bool = false) {
+        movieProvider.request(.fetchMoviesByYear(page: page, ascending: ascending)) { (result) in
+            switch result {
+            case .success(let response):
+                do {
+                    let json = try JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
+                    let movies = json["results"] as! [[String:Any]]
+                    
+                    let sort: Movie.sort = ascending ? .YearAsc : .YearDesc
+                    (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
+                    self.movies = self.parseMovies(fromDict: movies, context: AppDelegate.viewContext, storedIds: self.getStoredMovieIds())
+                } catch let error as NSError {
+                    print("\(error)")
+                }
+            case .failure(let error):
+                print("Error fetching movies from TMDB:\n\(error)")
+            }
+            
+        }
+    }
+    
     func parseMovies(fromDict movies: [[String: Any]], context: NSManagedObjectContext, storedIds: Set<Int16>) -> [Movie] {
         var temp = [Movie]()
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-mm-dd"
         
         for movie in movies {
             if let newId = movie["id"] {
@@ -87,8 +173,18 @@ class MovieTabBarController: UITabBarController {
                     newMovie.sinopsis = movie["overview"] as? String
                     newMovie.rating = (movie["vote_average"] as! NSNumber).doubleValue
                     newMovie.favorite = false
+                    guard let dateString = movie["release_date"] as? String else {
+                        AppDelegate.viewContext.delete(newMovie)
+                        continue
+                    }
+                    
+                    newMovie.publication = formatter.date(from: dateString)
+                    guard let posterPath = movie["poster_path"] as? String else {
+                        AppDelegate.viewContext.delete(newMovie)
+                        continue
+                    }
                     temp.append(newMovie)
-                    ImagesClient().fetchImage(withName: movie["poster_path"] as! String) { (image: UIImage) in
+                    ImagesClient().fetchImage(withName: posterPath) { (image: UIImage) in
                         newMovie.image = image.pngData()
                         do {
                             try AppDelegate.viewContext.save()

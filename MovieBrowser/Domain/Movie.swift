@@ -14,6 +14,12 @@ class Movie: NSManagedObject {
     
     public static let imageWidth: CGFloat = 130
     
+    public enum sort {
+        case YearAsc
+        case YearDesc
+        case Rating
+    }
+    
     public func toggleFavorite() {
         favorite = !favorite
         do {

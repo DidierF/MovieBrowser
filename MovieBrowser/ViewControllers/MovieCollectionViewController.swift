@@ -14,19 +14,34 @@ private let reuseIdentifier = "Cell"
 class MovieCollectionViewController: UICollectionViewController {
     
     var movies: [Movie] = []
+    private var sorting: Movie.sort = .Rating
     
-    func getMoviesRequest() -> NSFetchRequest<Movie> {
+    private func getMoviesSort(sort: Movie.sort) -> [NSSortDescriptor]{
+        switch sort {
+        case .Rating:
+            return [NSSortDescriptor(key: "rating", ascending: false)]
+        case .YearAsc:
+            return [NSSortDescriptor(key: "publication", ascending: true)]
+        case .YearDesc:
+            return [NSSortDescriptor(key: "publication", ascending: false)]
+        }
+    }
+    
+    func getRequestPredicate() -> NSPredicate? {
+        return nil
+    }
+    
+    private func getMoviesRequest(withSort sortDescriptors: [NSSortDescriptor]) -> NSFetchRequest<Movie> {
         let movieReq: NSFetchRequest<Movie> = Movie.fetchRequest()
-        movieReq.sortDescriptors = [
-            NSSortDescriptor(key: "rating", ascending: false)
-        ]
+        movieReq.sortDescriptors = sortDescriptors
+        movieReq.predicate = self.getRequestPredicate()
         return movieReq
     }
     
     func loadMovies() {
         // Load stored movies
         do {
-            movies = try AppDelegate.viewContext.fetch(getMoviesRequest())
+            movies = try AppDelegate.viewContext.fetch(getMoviesRequest(withSort: getMoviesSort(sort: sorting)))
         } catch let error as NSError {
             print("Error getting stored movies: \(error)")
         }
@@ -55,6 +70,10 @@ class MovieCollectionViewController: UICollectionViewController {
         collectionView.backgroundColor = AppDelegate.backgroundColor
         
         loadMovies()
+    }
+    
+    func set(sort: Movie.sort) {
+        self.sorting = sort
     }
     
     // MARK: UICollectionViewDataSource

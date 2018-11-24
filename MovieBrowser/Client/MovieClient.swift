@@ -12,6 +12,7 @@ import Alamofire
 
 enum MovieClient {
     case fetchMoviesByRating(page: Int)
+    case fetchMoviesByYear(page: Int, ascending: Bool)
 }
 
 let TMDB_API_KEY = "3e1ebc5c2fbd4ca68824378351d25f3e"
@@ -19,22 +20,23 @@ let TMDB_API_KEY = "3e1ebc5c2fbd4ca68824378351d25f3e"
 extension MovieClient: TargetType {
     
     var baseURL: URL {
-        switch self {
-        case .fetchMoviesByRating:
-            return URL(string: "https://api.themoviedb.org/3")!
-        }
+        return URL(string: "https://api.themoviedb.org/3")!
     }
     
     var path: String {
         switch self {
         case .fetchMoviesByRating:
             return "/movie/top_rated"
+        case .fetchMoviesByYear:
+            return "/discover/movie"
         }
     }
     
     var method: Moya.Method {
         switch self {
         case .fetchMoviesByRating:
+            return .get
+        case .fetchMoviesByYear:
             return .get
         }
     }
@@ -49,6 +51,9 @@ extension MovieClient: TargetType {
         switch self {
         case .fetchMoviesByRating(let page):
             params["page"] = page
+        case .fetchMoviesByYear(let page, let ascending):
+            params["page"] = page
+            params["sort_by"] = ascending ? "release_date.asc" : "release_date.desc"
         }
         return .requestParameters(parameters: params, encoding: URLEncoding.default)
     }
