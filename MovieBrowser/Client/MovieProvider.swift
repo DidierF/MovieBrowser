@@ -1,5 +1,5 @@
 //
-//  MovieClient.swift
+//  MovieProvider.swift
 //  MovieBrowser
 //
 //  Created by Didier Fuentes on 11/22/18.
@@ -10,14 +10,14 @@ import Foundation
 import Moya
 import Alamofire
 
-enum MovieClient {
+enum MovieProvider {
     case fetchMoviesByRating(apiKey: String, page: Int)
     case fetchMoviesByYear(apiKey: String, page: Int, ascending: Bool)
 }
 
 let firebase = FirebaseClient()
 
-extension MovieClient: TargetType {
+extension MovieProvider: TargetType {
     
     var baseURL: URL {
         return URL(string: "https://api.themoviedb.org/3")!

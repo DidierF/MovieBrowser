@@ -14,7 +14,7 @@ class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerV
     
     var movies = [Movie]()
     let firebase = FirebaseClient()
-    let movieProvider = MoyaProvider<MovieClient>()
+    let movieProvider = MoyaProvider<MovieProvider>()
     let picker = UIPickerView()
     let sortOptions: [String] = [
         "Rating",
