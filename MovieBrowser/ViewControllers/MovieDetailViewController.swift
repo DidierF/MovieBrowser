@@ -90,8 +90,7 @@ class MovieDetailViewController: UIViewController {
         contentView.trailingAnchor.constraint(equalTo: scroll.trailingAnchor).isActive = true
         contentView.leadingAnchor.constraint(equalTo: scroll.leadingAnchor).isActive = true
         contentView.topAnchor.constraint(equalTo: scroll.topAnchor).isActive = true
-        contentView.bottomAnchor.constraint(equalTo: scroll.bottomAnchor).isActive = true
-        contentView.backgroundColor = .red
+        contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         
         contentView.addSubview(movieImage)
         if let imageData: Data = movie?.image {
@@ -101,10 +100,6 @@ class MovieDetailViewController: UIViewController {
         movieImage.centerXAnchor.constraint(equalTo: contentView.centerXAnchor).isActive = true
         movieImage.widthAnchor.constraint(equalToConstant:Movie.imageWidth).isActive = true
         contentView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-24-[v0(\(Movie.imageWidth * 1.5))]", options: NSLayoutConstraint.FormatOptions(), metrics: nil, views: ["v0":movieImage]))
-        
-        movieImage.isUserInteractionEnabled = true
-        let itgr = UITapGestureRecognizer(target: self, action: #selector(favoriteMovie))
-        favImage.addGestureRecognizer(itgr)
         
         contentView.addSubview(movieTitle)
         movieTitle.text = movie!.title
@@ -122,7 +117,8 @@ class MovieDetailViewController: UIViewController {
         contentView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:[v1]-8-[v0]", options: NSLayoutConstraint.FormatOptions(), metrics: nil, views: ["v0":favImage, "v1":movieTitle]))
         contentView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:[v0]-\(screenPadding)-|", options: NSLayoutConstraint.FormatOptions(), metrics: nil, views: ["v0": favImage]))
         
-        let tapRecoginizer = UITapGestureRecognizer(target: self, action: #selector(favoriteMovie))
+        let tapRecoginizer = UITapGestureRecognizer(target: self, action: #selector(favoriteMovie(recognizer:)))
+        tapRecoginizer.cancelsTouchesInView = false
         favImage.addGestureRecognizer(tapRecoginizer)
         
         contentView.addSubview(movieSinopsis)
@@ -131,7 +127,7 @@ class MovieDetailViewController: UIViewController {
         contentView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|-\(screenPadding)-[v0]-\(screenPadding)-|", options: NSLayoutConstraint.FormatOptions(), metrics: nil, views: ["v0": movieSinopsis]))
     }
     
-    @objc func favoriteMovie() {
+    @objc func favoriteMovie(recognizer: UITapGestureRecognizer) {
         movie!.toggleFavorite()
         favImage.image = movie!.favorite ? #imageLiteral(resourceName: "favFilled") : #imageLiteral(resourceName: "favEmpty")
         favImage.image = favImage.image?.withRenderingMode(.alwaysTemplate)
