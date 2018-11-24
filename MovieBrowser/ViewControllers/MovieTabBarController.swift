@@ -13,8 +13,8 @@ import Moya
 class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerViewDataSource {
     
     var movies = [Movie]()
+    let movieClient = MovieWSClient()
     let firebase = FirebaseClient()
-    let movieProvider = MoyaProvider<MovieProvider>()
     let picker = UIPickerView()
     let sortOptions: [String] = [
         "Rating",
@@ -33,7 +33,13 @@ class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerV
         navigationItem.rightBarButtonItem?.tintColor = AppDelegate.tintColor
         
         setupTabs()
-        fetchMoviesByRating()
+        movieClient.fetchMoviesByRating(completion: { newMovies in
+            let sort: Movie.sort = .Rating
+            self.movies = newMovies
+            (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
+        }, andImageCompletion: {
+            (self.selectedViewController as! MovieCollectionViewController).loadMovies()
+        })
     }
     
     fileprivate func setupTabs() {
@@ -63,24 +69,6 @@ class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerV
         picker.layer.cornerRadius = 15
     }
     
-    func getStoredMovieIds() -> Set<Int16> {
-        let idReq: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest<NSFetchRequestResult>(entityName: "Movie")
-        idReq.propertiesToFetch = ["extId"]
-        idReq.resultType = .dictionaryResultType
-        do {
-            if let results = try AppDelegate.viewContext.fetch(idReq) as? [[String: Any]] {
-                let idSet = Set<Int16>(results.compactMap({ (dict) -> Int16? in
-                    return dict["extId"] as? Int16
-                }))
-                print("Stored extIds: \n \(idSet)")
-                return idSet
-            }
-        } catch let error as NSError {
-            print("Error getting stored ids: \(error)")
-        }
-        return Set<Int16>()
-    }
-    
     @objc func sortMovies() {
         picker.isHidden = false
     }
@@ -102,113 +90,43 @@ class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerV
         switch row {
         case 0:
             controller.set(sort: .Rating)
-            fetchMoviesByRating()
+            movieClient.fetchMoviesByRating(completion:{ newMovies in
+                let sort: Movie.sort = .Rating
+                self.movies = newMovies
+                (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
+            }, andImageCompletion: {
+                (self.selectedViewController as! MovieCollectionViewController).loadMovies()
+            })
         case 1:
             controller.set(sort: .YearAsc)
-            fetchMoviesByYear(ascending: true)
+            movieClient.fetchMoviesByYear(ascending: true, completion: { newMovies in
+                let sort: Movie.sort = .YearAsc
+                self.movies = newMovies
+                (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
+            }, andImageCompletion: {
+                (self.selectedViewController as! MovieCollectionViewController).loadMovies()
+            })
         case 2:
             controller.set(sort: .YearDesc)
-            fetchMoviesByYear(ascending: false)
+            movieClient.fetchMoviesByYear(ascending: false, completion: { newMovies in
+                let sort: Movie.sort = .YearDesc
+                self.movies = newMovies
+                (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
+            }, andImageCompletion: {
+                (self.selectedViewController as! MovieCollectionViewController).loadMovies()
+            })
         default:
             controller.set(sort: .Rating)
-            fetchMoviesByRating()
+            movieClient.fetchMoviesByRating(completion: { newMovies in
+                let sort: Movie.sort = .YearAsc
+                self.movies = newMovies
+                (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
+            }, andImageCompletion: {
+                (self.selectedViewController as! MovieCollectionViewController).loadMovies()
+            })
         }
         controller.loadMovies()
         picker.isHidden = true
-    }
-    
-    func fetchMoviesByRating(page: Int = 1) {
-        firebase.getTmdbApiKey { (apiKey) in
-            self.movieProvider.request(.fetchMoviesByRating(apiKey: apiKey, page: page)) { (result) in
-                switch result {
-                case .success(let response):
-                    do {
-                        let json = try JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
-                        let movies = json["results"] as! [[String:Any]]
-                        
-                        let sort: Movie.sort = .Rating
-                        (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
-                        self.movies = self.parseMovies(fromDict: movies, context: AppDelegate.viewContext, storedIds: self.getStoredMovieIds())
-                    } catch let error as NSError {
-                        print("\(error)")
-                    }
-                case .failure(let error):
-                    print("Error fetching movies from TMDB:\n\(error)")
-                }
-            }
-        }
-    }
-    
-    func fetchMoviesByYear(page: Int = 1, ascending: Bool = false) {
-        firebase.getTmdbApiKey { (apiKey) in
-            self.movieProvider.request(.fetchMoviesByYear(apiKey: apiKey, page: page, ascending: ascending)) { (result) in
-                switch result {
-                case .success(let response):
-                    do {
-                        let json = try JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
-                        let movies = json["results"] as! [[String:Any]]
-                        
-                        let sort: Movie.sort = ascending ? .YearAsc : .YearDesc
-                        (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
-                        self.movies = self.parseMovies(fromDict: movies, context: AppDelegate.viewContext, storedIds: self.getStoredMovieIds())
-                    } catch let error as NSError {
-                        print("\(error)")
-                    }
-                case .failure(let error):
-                    print("Error fetching movies from TMDB:\n\(error)")
-                }
-            }
-        }
-    }
-    
-    func parseMovies(fromDict movies: [[String: Any]], context: NSManagedObjectContext, storedIds: Set<Int16>) -> [Movie] {
-        var temp = [Movie]()
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-mm-dd"
-        
-        for movie in movies {
-            if let newId = movie["id"] {
-                let intId = (newId as! NSNumber).int16Value
-                if !storedIds.contains(intId) {
-                    let newMovie = Movie(context: context)
-                    newMovie.extId = intId
-                    newMovie.title = movie["title"] as? String
-                    newMovie.sinopsis = movie["overview"] as? String
-                    newMovie.rating = (movie["vote_average"] as! NSNumber).doubleValue
-                    newMovie.favorite = false
-                    guard let dateString = movie["release_date"] as? String else {
-                        AppDelegate.viewContext.delete(newMovie)
-                        continue
-                    }
-                    
-                    newMovie.publication = formatter.date(from: dateString)
-                    guard let posterPath = movie["poster_path"] as? String else {
-                        AppDelegate.viewContext.delete(newMovie)
-                        continue
-                    }
-                    temp.append(newMovie)
-                    ImagesClient().fetchImage(withName: posterPath) { (image: UIImage) in
-                        newMovie.image = image.pngData()
-                        do {
-                            try AppDelegate.viewContext.save()
-                        } catch let er {
-                            print("Error saving movie:\n\(er)")
-                        }
-                        
-                        (self.selectedViewController as! MovieCollectionViewController).loadMovies()
-                    }
-                    do {
-                        try AppDelegate.viewContext.save()
-                    } catch let er {
-                        print("Error saving movie:\n\(er)")
-                    }
-                }
-            }
-            (selectedViewController as! MovieCollectionViewController).loadMovies()
-        }
-        
-        return temp
     }
 
 }
