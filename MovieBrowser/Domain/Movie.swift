@@ -19,6 +19,8 @@ class Movie: NSManagedObject {
         case Rating
         case YearAsc
         case YearDesc
+        case NameAsc
+        case NameDesc
     }
     
     public func toggleFavorite() {

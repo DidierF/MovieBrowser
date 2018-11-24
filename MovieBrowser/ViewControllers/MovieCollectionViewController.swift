@@ -48,6 +48,10 @@ class MovieCollectionViewController: UICollectionViewController {
             return [NSSortDescriptor(key: "publication", ascending: true)]
         case .YearDesc:
             return [NSSortDescriptor(key: "publication", ascending: false)]
+        case .NameAsc:
+            return [NSSortDescriptor(key: "title", ascending: true)]
+        case .NameDesc:
+            return [NSSortDescriptor(key: "title", ascending: false)]
         }
     }
     

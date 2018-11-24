@@ -18,8 +18,10 @@ class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerV
     let picker = UIPickerView()
     let sortOptions: [String] = [
         "Rating",
-        "Publication old first",
-        "Publication new first"
+        "Publication, old first",
+        "Publication, new first",
+        "Name, A-Z",
+        "Name, Z-A"
     ]
     
     override func viewDidLoad() {
@@ -87,6 +89,7 @@ class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerV
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         let controller = self.selectedViewController as! MovieCollectionViewController
+        controller.collectionView.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
         switch row {
         case 0:
             controller.set(sort: .Rating)
@@ -110,6 +113,24 @@ class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerV
             controller.set(sort: .YearDesc)
             movieClient.fetchMoviesByYear(ascending: false, completion: { newMovies in
                 let sort: Movie.Sort = .YearDesc
+                self.movies = newMovies
+                (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
+            }, andImageCompletion: {
+                (self.selectedViewController as! MovieCollectionViewController).loadMovies()
+            })
+        case 3:
+            controller.set(sort: .NameAsc)
+            movieClient.fetchMoviesByRating(completion: { newMovies in
+                let sort: Movie.Sort = .YearAsc
+                self.movies = newMovies
+                (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
+            }, andImageCompletion: {
+                (self.selectedViewController as! MovieCollectionViewController).loadMovies()
+            })
+        case 4:
+            controller.set(sort: .NameDesc)
+            movieClient.fetchMoviesByRating(completion: { newMovies in
+                let sort: Movie.Sort = .YearAsc
                 self.movies = newMovies
                 (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
             }, andImageCompletion: {
