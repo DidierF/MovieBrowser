@@ -14,7 +14,7 @@ private let reuseIdentifier = "Cell"
 class MovieCollectionViewController: UICollectionViewController {
     
     var movies: [Movie] = []
-    private var sorting: Movie.Sort = .Rating
+    var sorting: Movie.Sort = .Rating
     
     init() {
         let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
@@ -100,14 +100,5 @@ class MovieCollectionViewController: UICollectionViewController {
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let controller = MovieDetailViewController(movie: movies[indexPath.row])
         self.navigationController?.pushViewController(controller, animated: true)
-    }
-    
-    // MARK: UIScrollViewDelegate
-    
-    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        if (scrollView.contentOffset.y == scrollView.contentSize.height - scrollView.frame.size.height) {
-            // reached the bottom
-            
-        }
     }
 }
