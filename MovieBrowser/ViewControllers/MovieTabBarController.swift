@@ -34,7 +34,7 @@ class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerV
         
         setupTabs()
         movieClient.fetchMoviesByRating(completion: { newMovies in
-            let sort: Movie.sort = .Rating
+            let sort: Movie.Sort = .Rating
             self.movies = newMovies
             (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
         }, andImageCompletion: {
@@ -91,7 +91,7 @@ class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerV
         case 0:
             controller.set(sort: .Rating)
             movieClient.fetchMoviesByRating(completion:{ newMovies in
-                let sort: Movie.sort = .Rating
+                let sort: Movie.Sort = .Rating
                 self.movies = newMovies
                 (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
             }, andImageCompletion: {
@@ -100,7 +100,7 @@ class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerV
         case 1:
             controller.set(sort: .YearAsc)
             movieClient.fetchMoviesByYear(ascending: true, completion: { newMovies in
-                let sort: Movie.sort = .YearAsc
+                let sort: Movie.Sort = .YearAsc
                 self.movies = newMovies
                 (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
             }, andImageCompletion: {
@@ -109,7 +109,7 @@ class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerV
         case 2:
             controller.set(sort: .YearDesc)
             movieClient.fetchMoviesByYear(ascending: false, completion: { newMovies in
-                let sort: Movie.sort = .YearDesc
+                let sort: Movie.Sort = .YearDesc
                 self.movies = newMovies
                 (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
             }, andImageCompletion: {
@@ -118,7 +118,7 @@ class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerV
         default:
             controller.set(sort: .Rating)
             movieClient.fetchMoviesByRating(completion: { newMovies in
-                let sort: Movie.sort = .YearAsc
+                let sort: Movie.Sort = .YearAsc
                 self.movies = newMovies
                 (self.selectedViewController as! MovieCollectionViewController).set(sort: sort)
             }, andImageCompletion: {

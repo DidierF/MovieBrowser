@@ -15,7 +15,7 @@ class Movie: NSManagedObject {
     
     public static let imageWidth: CGFloat = 130
     
-    public enum sort {
+    public enum Sort {
         case YearAsc
         case YearDesc
         case Rating
