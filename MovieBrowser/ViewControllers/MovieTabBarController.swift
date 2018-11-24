@@ -108,7 +108,7 @@ class MovieTabBarController: UITabBarController, UIPickerViewDelegate, UIPickerV
             fetchMoviesByYear(ascending: true)
         case 2:
             controller.set(sort: .YearDesc)
-            fetchMoviesByYear(ascending: true)
+            fetchMoviesByYear(ascending: false)
         default:
             controller.set(sort: .Rating)
             fetchMoviesByRating()
