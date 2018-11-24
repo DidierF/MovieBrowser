@@ -11,8 +11,8 @@ import Moya
 import Alamofire
 
 enum MovieProvider {
-    case fetchMoviesByRating(apiKey: String, page: Int)
-    case fetchMoviesByYear(apiKey: String, page: Int, ascending: Bool)
+    case fetchMoviesByRating(apiKey: String, page: Int16)
+    case fetchMoviesByYear(apiKey: String, page: Int16, ascending: Bool)
 }
 
 let firebase = FirebaseClient()

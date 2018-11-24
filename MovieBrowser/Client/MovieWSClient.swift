@@ -16,6 +16,7 @@ class MovieWSClient: NSObject {
     
     let movieProvider = MoyaProvider<MovieProvider>()
     
+    
     func getStoredMovieIds() -> Set<Int16> {
         let idReq: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest<NSFetchRequestResult>(entityName: "Movie")
         idReq.propertiesToFetch = ["extId"]
@@ -34,42 +35,94 @@ class MovieWSClient: NSObject {
         return Set<Int16>()
     }
     
-    func fetchMoviesByRating(page: Int = 1, completion: @escaping ([Movie]) -> Void, andImageCompletion imageCompletion: @escaping () -> Void) {
-        firebase.getTmdbApiKey { (apiKey) in
-            self.movieProvider.request(.fetchMoviesByRating(apiKey: apiKey, page: page)) { (result) in
-                switch result {
-                case .success(let response):
-                    do {
-                        let json = try JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
-                        let movies = json["results"] as! [[String:Any]]
-                        
-                        completion(self.parseMovies(fromDict: movies, context: AppDelegate.viewContext, storedIds: self.getStoredMovieIds(), withCompletion: imageCompletion))
-                        
-                    } catch let error as NSError {
-                        print("\(error)")
+    func getLastPage(forType type: Movie.Sort) -> Int16 {
+        
+        let pageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest<NSFetchRequestResult>(entityName: "MoviesPage")
+        pageRequest.predicate = NSPredicate(format: "pageType = \(type.rawValue)")
+        pageRequest.propertiesToFetch = ["last"]
+        pageRequest.resultType = .dictionaryResultType
+        
+        do {
+            if let pages = try AppDelegate.viewContext.fetch(pageRequest) as? [[String: Int16]] {
+                if pages.count == 0 {
+                    return 0
+                } else {
+                    return pages.first!["last"]!
+                }
+            }
+        } catch let err {
+            print("Error getting last page: \(err)")
+        }
+        return 0
+    }
+    
+    func saveLastPage(newPage page: Int16, forType type: Movie.Sort) {
+        
+        let pageRequest: NSFetchRequest<MoviesPage> = MoviesPage.fetchRequest()
+        pageRequest.predicate = NSPredicate(format: "pageType = \(type.rawValue)")
+        
+        do {
+            if let pages = try AppDelegate.viewContext.fetch(pageRequest) as [MoviesPage]? {
+                if pages.count == 0 {
+                    let newPage = MoviesPage(context: AppDelegate.viewContext)
+                    newPage.pageType = type.rawValue
+                    newPage.last = page
+                } else {
+                    pages.first!.last = page
+                }
+                try AppDelegate.viewContext.save()
+            }
+        } catch let err {
+            print("Error saving last page: \(err)")
+        }
+        
+    }
+    
+    func fetchMoviesByRating(page: Int16 = 1, completion: @escaping ([Movie]) -> Void, andImageCompletion imageCompletion: @escaping () -> Void) {
+        if page > getLastPage(forType: .Rating) {
+            firebase.getTmdbApiKey { (apiKey) in
+                self.movieProvider.request(.fetchMoviesByRating(apiKey: apiKey, page: page)) { (result) in
+                    switch result {
+                    case .success(let response):
+                        do {
+                            let json = try JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
+                            let movies = json["results"] as! [[String:Any]]
+                            
+                            self.saveLastPage(newPage: page, forType: .Rating)
+                            
+                            completion(self.parseMovies(fromDict: movies, context: AppDelegate.viewContext, storedIds: self.getStoredMovieIds(), withCompletion: imageCompletion))
+                            
+                        } catch let error as NSError {
+                            print("\(error)")
+                        }
+                    case .failure(let error):
+                        print("Error fetching movies from TMDB:\n\(error)")
                     }
-                case .failure(let error):
-                    print("Error fetching movies from TMDB:\n\(error)")
                 }
             }
         }
     }
     
-    func fetchMoviesByYear(page: Int = 1, ascending: Bool = false, completion: @escaping ([Movie]) -> Void, andImageCompletion imageCompletion: @escaping () -> Void) {
-        firebase.getTmdbApiKey { (apiKey) in
-            self.movieProvider.request(.fetchMoviesByYear(apiKey: apiKey, page: page, ascending: ascending)) { (result) in
-                switch result {
-                case .success(let response):
-                    do {
-                        let json = try JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
-                        let movies = json["results"] as! [[String:Any]]
-                        
-                        completion(self.parseMovies(fromDict: movies, context: AppDelegate.viewContext, storedIds: self.getStoredMovieIds(), withCompletion: imageCompletion))
-                    } catch let error as NSError {
-                        print("\(error)")
+    func fetchMoviesByYear(page: Int16 = 1, ascending: Bool = false, completion: @escaping ([Movie]) -> Void, andImageCompletion imageCompletion: @escaping () -> Void) {
+        let sort: Movie.Sort = ascending ? .YearAsc : .YearDesc
+        if page > getLastPage(forType: sort) {
+            firebase.getTmdbApiKey { (apiKey) in
+                self.movieProvider.request(.fetchMoviesByYear(apiKey: apiKey, page: page, ascending: ascending)) { (result) in
+                    switch result {
+                    case .success(let response):
+                        do {
+                            let json = try JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
+                            let movies = json["results"] as! [[String:Any]]
+                            
+                            self.saveLastPage(newPage: page, forType: sort)
+                            
+                            completion(self.parseMovies(fromDict: movies, context: AppDelegate.viewContext, storedIds: self.getStoredMovieIds(), withCompletion: imageCompletion))
+                        } catch let error as NSError {
+                            print("\(error)")
+                        }
+                    case .failure(let error):
+                        print("Error fetching movies from TMDB:\n\(error)")
                     }
-                case .failure(let error):
-                    print("Error fetching movies from TMDB:\n\(error)")
                 }
             }
         }
